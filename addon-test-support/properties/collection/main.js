@@ -11,14 +11,12 @@ export class Collection {
     this.definition = definition || {};
     this.parent = parent;
     this.key = key;
-
     this._itemCounter = create({
       count: count(scope, {
         resetScope: this.definition.resetScope,
         testContainer: this.definition.testContainer
-      })
+      }, {}, false)
     }, { parent });
-
     this._items = [];
   }
 
@@ -37,8 +35,7 @@ export class Collection {
 
       finalizedDefinition.scope = itemScope;
 
-      let tree = create(finalizedDefinition, { parent });
-
+      let tree = create(finalizedDefinition, { parent }, false);
       // Change the key of the root node
       Ceibo.meta(tree).key = `${key}[${index}]`;
 

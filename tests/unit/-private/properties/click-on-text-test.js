@@ -233,4 +233,40 @@ moduleForProperty('clickOnText', function(test) {
       return page.foo('Click me');
     }, /page\.foo/, 'Element not found');
   });
+
+  test('calls click helper when composed', async function(assert) {
+    assert.expect(2);
+
+    let clickPage = create({
+      foo: clickOnText('fieldset'),
+      bar: clickOnText('button')
+    });
+
+
+    let page = create({
+      scope: '.container',
+      fieldset: clickPage
+    });
+    await this.adapter.createTemplate(this, page, `
+      
+      <div class="container">
+        <fieldset>
+          <button>Lorem</button>
+          <button>Ipsum</button>
+        </fieldset>
+      </div>
+    `);
+
+    this.adapter.$('fieldset :contains("Lorem"):last').one('click', function() {
+      assert.ok(true);
+    });
+
+    await this.adapter.await(page.fieldset.foo('Lorem'));
+
+    this.adapter.$('button:contains("Lorem")').one('click', function() {
+      assert.ok(true);
+    });
+
+    await this.adapter.await(page.fieldset.bar('Lorem'));
+  });
 });

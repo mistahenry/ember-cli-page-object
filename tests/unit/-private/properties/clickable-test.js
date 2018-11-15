@@ -182,4 +182,21 @@ moduleForProperty('clickable', function(test) {
       return page.foo();
     }, /page\.foo/, 'Element not found');
   });
+  test('calls click helper when composed', async function(assert) {
+    assert.expect(1);
+
+    let expectedSelector = 'button';
+    let clickPage = create({
+      foo: clickable(expectedSelector)
+    });
+    let page = create({
+      scope: '.container',
+      button: clickPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container"><button>Click me</button></div>');
+
+    this.adapter.$(expectedSelector).one('click', () => assert.ok(1));
+
+    await this.adapter.await(page.button.foo());
+  });
 });

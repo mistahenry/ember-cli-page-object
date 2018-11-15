@@ -151,4 +151,18 @@ moduleForProperty('value', function(test) {
 
     assert.equal(page.foo, 'lorem');
   });
+
+  test('returns the text of the input when composed', async function(assert) {
+    let inputPage = create({
+      foo: value('input')
+    });
+
+    let page = create({
+      scope: '.container',
+      input: inputPage
+    })
+    await this.adapter.createTemplate(this, page, '<div class="container"><input value="Lorem ipsum"></div>');
+
+    assert.equal(page.input.foo, 'Lorem ipsum');
+  });
 });

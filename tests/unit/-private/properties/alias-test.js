@@ -316,4 +316,22 @@ moduleForProperty('alias', function(test) {
 
     assert.equal(page.aliasedIsButtonVisible, false);
   });
+
+  test('can alias through composition', async function(assert) {
+    assert.expect(1);
+
+    const aliasPage = create({
+      isButtonVisible: isVisible('button'),
+      aliasedIsButtonVisible: alias('isButtonVisible')
+    });
+
+
+    let page = create({
+      scope: '.container',
+      aliasPage: aliasPage
+    })
+    await this.adapter.createTemplate(this, page, '<div class="container"><button>Look at me</button></div>');
+
+    assert.ok(page.aliasPage.aliasedIsButtonVisible);
+  });
 });

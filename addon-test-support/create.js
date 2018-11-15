@@ -3,7 +3,7 @@ import { render, setContext, removeContext } from './-private/context';
 import { assign } from './-private/helpers';
 import { visitable } from './properties/visitable';
 import dsl from './-private/dsl';
-
+import $ from '-jquery';
 //
 // When running RFC268 tests, we have to play some tricks to support chaining.
 // RFC268 helpers don't wait for things to settle by defaut, but return a
@@ -54,6 +54,25 @@ function buildChainObject(node, blueprintKey, blueprint, defaultBuilder) {
   blueprint = assign({}, blueprint);
 
   return buildObject(node, blueprintKey, blueprint, defaultBuilder);
+}
+
+//recursively converts any page object child property (via composition) to stored definition object
+function convertPageObjectPropsToDefinitions(definition){
+  Object.getOwnPropertyNames(definition).forEach(function(key){
+    var property = definition[key];
+    //use the definition that created the page object in place of the page object
+    if(property && typeof(property) === 'object'){
+      if(property._pageObjectDefinition){
+        let pageObjectDefinition = assign({}, property._pageObjectDefinition);
+
+        definition[key] = pageObjectDefinition;
+      }else{
+        convertPageObjectPropsToDefinitions(property);
+      }
+      
+    }
+  });
+  return definition;
 }
 
 /**
@@ -141,36 +160,37 @@ function buildChainObject(node, blueprintKey, blueprint, defaultBuilder) {
  * @param {Object} options - [private] Ceibo options. Do not use!
  * @return {PageObject}
  */
-export function create(definitionOrUrl, definitionOrOptions, optionsOrNothing) {
+export function create(definitionOrUrl, definitionOrOptions, optionsOrIsPageObject) {
   let definition;
   let url;
   let options;
-
+  let isPageObject;
   if (typeof (definitionOrUrl) === 'string') {
     url = definitionOrUrl;
     definition = definitionOrOptions || {};
-    options = optionsOrNothing || {};
+    options = optionsOrIsPageObject || {};
+    isPageObject = true;
   } else {
     url = false;
     definition = definitionOrUrl;
     options = definitionOrOptions || {};
+    isPageObject = (optionsOrIsPageObject !== false);
   }
-
   definition = assign({}, definition);
-
   if (url) {
     definition.visit = visitable(url);
   }
-
+  
   let { context } = definition;
   delete definition.context;
 
+  let definitionToStore = isPageObject ? convertPageObjectPropsToDefinitions(assign({}, definition)) : definition;
+  definition = $.extend({}, definitionToStore);
   // Build the chained tree
   let chainedBuilder = {
     object: buildChainObject
   };
   let chainedTree = Ceibo.create(definition, assign({ builder: chainedBuilder }, options));
-
   // Attach it to the root in the definition of the primary tree
   definition._chainedTree = {
     isDescriptor: true,
@@ -184,16 +204,19 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrNothing) {
   let builder = {
     object: buildObject
   };
-
+  
   let page = Ceibo.create(definition, assign({ builder }, options));
-
   if (page) {
     page.render = render;
     page.setContext = setContext;
     page.removeContext = removeContext;
-
+    page.extend = function(){
+      
+    }
+    
+    page._pageObjectDefinition = definitionToStore;
+    
     page.setContext(context);
   }
-
   return page;
 }

@@ -427,4 +427,25 @@ moduleForProperty('collection', function(test) {
     assert.equal(page.foo[0].text, 'Lorem');
     assert.equal(page.foo[1].text, 'Ipsum');
   });
+  test('returns an item when composed', async function(assert) {
+
+    let collectionPage = create({
+      foo: collection('span', {
+        text: text()
+      })
+    });
+
+    let page = create({
+      scope: '.container',
+      collectionPage: collectionPage
+    })
+    await this.adapter.createTemplate(this, page, `
+      <div class="container">
+        <span>Lorem</span>
+        <span>Ipsum</span>
+      </div>
+    `);
+    assert.equal(page.collectionPage.foo.objectAt(0).text, 'Lorem');
+    assert.equal(page.collectionPage.foo.objectAt(1).text, 'Ipsum');
+  });
 });

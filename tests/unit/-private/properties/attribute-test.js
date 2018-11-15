@@ -132,4 +132,17 @@ moduleForProperty('attribute', function(test) {
 
     assert.equal(page.foo, 'a value');
   });
+  test('returns attribute value when composed', async function(assert) {
+    let attributePage = create({
+      foo: attribute('placeholder', ':input')
+    });
+
+    let page = create({
+      scope: '.container',
+      input: attributePage
+    })
+    await this.adapter.createTemplate(this, page, '<div class="container"><input placeholder="a value"></div>');
+
+    assert.equal(page.input.foo, 'a value');
+  });
 });

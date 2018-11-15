@@ -240,4 +240,25 @@ moduleForProperty('blurrable', function(test, adapter) {
       return page.foo.bar.quuz();
     }, /page\.foo\.bar\.quuz/, 'Element is not focusable because it is contenteditable="false"');
   });
+  test('actually blurs the element when composed', async function(assert) {
+    assert.expect(2);
+
+    let expectedSelector = 'input';
+    let blurrablePage = create({
+      foo: blurrable(expectedSelector)
+    });
+
+    let page = create({
+      scope: '.container',
+      input: blurrablePage
+    })
+    await this.adapter.createTemplate(this, page, '<div class="container"><input /></div>');
+
+    this.adapter.$(expectedSelector).focus().on('blur', () => {
+      assert.ok(1, 'blurred');
+      assert.equal(document.activeElement, document.body);
+    });
+
+    await this.adapter.await(page.input.foo());
+  });
 });
