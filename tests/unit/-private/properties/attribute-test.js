@@ -145,4 +145,41 @@ moduleForProperty('attribute', function(test) {
 
     assert.equal(page.input.foo, 'a value');
   });
+  test('returns attribute value when extended', async function(assert) {
+    let attributePage = create({
+      foo: attribute('placeholder', '#id1')
+    });
+
+    let page = create(attributePage.extend({
+      bar: attribute('placeholder', "#someId")
+    }));
+    //test extended page object's attribute properties still work
+    await this.adapter.createTemplate(this, page, '<input id="someId" placeholder="a value">');
+
+    assert.equal(page.bar, 'a value');
+    assert.throws(() => page.foo, /page\.foo/);
+    
+    //test that attribute properties created within extension overrides work properly
+    await this.adapter.createTemplate(this, page, '<input id="id1" placeholder="a value">');
+    assert.equal(page.foo, 'a value');
+    assert.throws(() => page.bar, /page\.bar/);
+  });
+
+  test('returns attribute value when created via composition + extension', async function(assert) {
+    assert.expect(1);
+
+    const containerPage = create({
+      scope: '.container'
+    });
+    let attributePage = create({
+      foo: attribute('placeholder', ':input')
+    });
+
+    let page = create(containerPage.extend({
+      input: attributePage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container"><input placeholder="a value"></div>');
+
+    assert.equal(page.input.foo, 'a value');
+  });
 });

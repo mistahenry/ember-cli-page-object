@@ -182,6 +182,7 @@ moduleForProperty('clickable', function(test) {
       return page.foo();
     }, /page\.foo/, 'Element not found');
   });
+
   test('calls click helper when composed', async function(assert) {
     assert.expect(1);
 
@@ -198,5 +199,61 @@ moduleForProperty('clickable', function(test) {
     this.adapter.$(expectedSelector).one('click', () => assert.ok(1));
 
     await this.adapter.await(page.button.foo());
+  });
+
+  test('calls click helper when extended', async function(assert) {
+    assert.expect(4);
+
+    let expectedSelector = '#id1';
+    let clickPage = create({
+      foo: clickable(expectedSelector)
+    });
+
+    let newSelector = "#id2";
+    let page = create(clickPage.extend({
+      bar: clickable(newSelector)
+    }));
+    //test clickable properties of extended page still work
+    await this.adapter.createTemplate(this, page, '<button id="id1">Click me</button>');
+
+    this.adapter.$(expectedSelector).one('click', () => assert.ok(1));
+
+    await this.adapter.await(page.foo());
+    await this.adapter.throws(assert, function() {
+      return page.bar();
+    }, /page\.bar/, 'Element not found');
+
+    //test clickable properties added via extension overrides work properly
+    await this.adapter.createTemplate(this, page, '<button id="id2">Click me</button>');
+
+    this.adapter.$(newSelector).one('click', () => assert.ok(1));
+
+    await this.adapter.await(page.bar());
+    await this.adapter.throws(assert, function() {
+      return page.foo();
+    }, /page\.foo/, 'Element not found');
+
+  });
+
+  test('calls click helper when created via composition + extension', async function(assert) {
+    assert.expect(1);
+
+    const containerPage = create({
+      scope: '.container'
+    });
+    let expectedSelector = 'button';
+    let clickPage = create({
+      foo: clickable(expectedSelector)
+    });
+
+    let page = create(containerPage.extend({
+      button: clickPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container"><button>Click me</button></div>');
+
+    this.adapter.$(expectedSelector).one('click', () => assert.ok(1));
+
+    await this.adapter.await(page.button.foo());
+
   });
 });

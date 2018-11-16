@@ -240,6 +240,7 @@ moduleForProperty('blurrable', function(test, adapter) {
       return page.foo.bar.quuz();
     }, /page\.foo\.bar\.quuz/, 'Element is not focusable because it is contenteditable="false"');
   });
+
   test('actually blurs the element when composed', async function(assert) {
     assert.expect(2);
 
@@ -251,7 +252,7 @@ moduleForProperty('blurrable', function(test, adapter) {
     let page = create({
       scope: '.container',
       input: blurrablePage
-    })
+    });
     await this.adapter.createTemplate(this, page, '<div class="container"><input /></div>');
 
     this.adapter.$(expectedSelector).focus().on('blur', () => {
@@ -261,4 +262,69 @@ moduleForProperty('blurrable', function(test, adapter) {
 
     await this.adapter.await(page.input.foo());
   });
+
+  test('actually blurs the element when extended', async function(assert) {
+    assert.expect(6);
+
+    let expectedSelector = '#id1';
+    let blurrablePage = create({
+      foo: blurrable(expectedSelector)
+    });
+
+    let updatedSelector = "#id2"
+    let page = create(blurrablePage.extend({
+      bar: blurrable(updatedSelector)
+    }));
+    //test that the blurrable of the page object that is extended still works
+    await this.adapter.createTemplate(this, page, '<input id="id1" />');
+
+    this.adapter.$(expectedSelector).focus().on('blur', () => {
+      assert.ok(1, 'blurred');
+      assert.equal(document.activeElement, document.body);
+    });
+
+    await this.adapter.await(page.foo());
+    await this.adapter.throws(assert, function() {
+      return page.bar();
+    }, /page\.bar/, 'Element not found');
+
+    //test that the blurrable that is added as an override during extension works properly
+    await this.adapter.createTemplate(this, page, '<input id="id2" />');
+
+    this.adapter.$(updatedSelector).focus().on('blur', () => {
+      assert.ok(1, 'blurred');
+      assert.equal(document.activeElement, document.body);
+    });
+
+    await this.adapter.await(page.bar());
+    await this.adapter.throws(assert, function() {
+      return page.foo();
+    }, /page\.foo/, 'Element not found');
+  });
+
+  test('actually blurs the element when created via composition + extension', async function(assert) {
+    assert.expect(2);
+
+    const containerPage = create({
+      scope: '.container'
+    });
+    let expectedSelector = 'input';
+    let blurrablePage = create({
+      foo: blurrable(expectedSelector)
+    });
+
+    let page = create(containerPage.extend({
+      input: blurrablePage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container"><input /></div>');
+
+    this.adapter.$(expectedSelector).focus().on('blur', () => {
+      assert.ok(1, 'blurred');
+      assert.equal(document.activeElement, document.body);
+    });
+
+    await this.adapter.await(page.input.foo());
+
+  });
+
 });

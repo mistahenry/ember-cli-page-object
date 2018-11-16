@@ -2,6 +2,7 @@ import Ceibo from 'ceibo';
 import { render, setContext, removeContext } from './-private/context';
 import { assign } from './-private/helpers';
 import { visitable } from './properties/visitable';
+import { collection } from './properties/collection';
 import dsl from './-private/dsl';
 import $ from '-jquery';
 //
@@ -62,10 +63,12 @@ function convertPageObjectPropsToDefinitions(definition){
     var property = definition[key];
     //use the definition that created the page object in place of the page object
     if(property && typeof(property) === 'object'){
-      if(property._pageObjectDefinition){
-        let pageObjectDefinition = assign({}, property._pageObjectDefinition);
+      if(Ceibo.meta(property) && Ceibo.meta(property)._pageObjectDefinition){
+        let pageObjectDefinition = assign({}, Ceibo.meta(property)._pageObjectDefinition);
 
         definition[key] = pageObjectDefinition;
+      }else if(property._collectionDefinition && property._collectionScope){
+        definition[key] = collection(property._collectionScope, property._collectionDefinition)
       }else{
         convertPageObjectPropsToDefinitions(property);
       }
@@ -184,8 +187,9 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrIsPageObje
   let { context } = definition;
   delete definition.context;
 
+  //we must replace all page objects with their definitions  
   let definitionToStore = isPageObject ? convertPageObjectPropsToDefinitions(assign({}, definition)) : definition;
-  definition = $.extend({}, definitionToStore);
+  definition = assign({}, definitionToStore);
   // Build the chained tree
   let chainedBuilder = {
     object: buildChainObject
@@ -197,7 +201,7 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrIsPageObje
 
     get() {
       return chainedTree;
-    }
+    } 
   };
 
   // Build the primary tree
@@ -210,11 +214,14 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrIsPageObje
     page.render = render;
     page.setContext = setContext;
     page.removeContext = removeContext;
-    page.extend = function(){
-      
+    page.extend = function(opts){
+      opts = assign({}, opts);
+      let overrides = convertPageObjectPropsToDefinitions(assign({}, opts));
+      // let definitonToUseForExtension = $.extend(true, {}, definitionToStore, overrides);
+      return $.extend(true, {}, definitionToStore, overrides);
     }
     
-    page._pageObjectDefinition = definitionToStore;
+    Ceibo.meta(page)._pageObjectDefinition = definitionToStore;
     
     page.setContext(context);
   }

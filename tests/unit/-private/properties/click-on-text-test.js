@@ -242,7 +242,6 @@ moduleForProperty('clickOnText', function(test) {
       bar: clickOnText('button')
     });
 
-
     let page = create({
       scope: '.container',
       fieldset: clickPage
@@ -268,5 +267,77 @@ moduleForProperty('clickOnText', function(test) {
     });
 
     await this.adapter.await(page.fieldset.bar('Lorem'));
+  });
+  test('calls click helper when extended', async function(assert) {
+    assert.expect(2);
+
+    let clickPage = create({
+      foo: clickOnText('fieldset'),
+      bar: clickOnText('button')
+    });
+
+
+    let page = create(clickPage.extend({
+      bar: clickOnText("")
+    }));
+    await this.adapter.createTemplate(this, page, `
+      <fieldset>
+        <button>Lorem</button>
+        <button id="ipsum">Ipsum</button>
+      </fieldset>
+    `);
+    //test extended objects clickOnText helper still works
+    this.adapter.$('fieldset :contains("Lorem"):last').one('click', function() {
+      assert.ok(true);
+    });
+
+    await this.adapter.await(page.foo('Lorem'));
+
+    //test that the clickOnText created via extension overrides works properly
+    this.adapter.$('button:contains("Lorem")').one('click', function() {
+      assert.ok(true);
+    });
+    this.adapter.$('#ipsum').one('click', function() {
+      assert.ok(true);
+    });
+    await this.adapter.await(page.bar('Ipsum'));
+  });
+
+  test('calls click helper when created via composition + extension', async function(assert) {
+    assert.expect(2);
+
+    const containerPage = create({
+      scope: '.container'
+    });
+    let clickPage = create({
+      foo: clickOnText('fieldset'),
+      bar: clickOnText('button')
+    });
+
+    let page = create(containerPage.extend({
+      fieldset: clickPage
+    }));
+    await this.adapter.createTemplate(this, page, `
+      
+      <div class="container">
+        <fieldset>
+          <button>Lorem</button>
+          <button>Ipsum</button>
+        </fieldset>
+      </div>
+    `);
+
+    this.adapter.$('fieldset :contains("Lorem"):last').one('click', function() {
+      assert.ok(true);
+    });
+
+    await this.adapter.await(page.fieldset.foo('Lorem'));
+
+    this.adapter.$('button:contains("Lorem")').one('click', function() {
+      assert.ok(true);
+    });
+
+    await this.adapter.await(page.fieldset.bar('Lorem'));
+
   });
 });

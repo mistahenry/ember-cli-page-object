@@ -26,7 +26,6 @@ export class Collection {
 
   objectAt(index) {
     let { key } = this;
-
     if (typeof this._items[index] === 'undefined') {
       let { scope, definition, parent } = this;
       let itemScope = buildSelector({}, scope, { at: index });
@@ -117,7 +116,9 @@ export function collection(scope, definition) {
       if (window.Proxy) {
         descriptor.value = proxyIt(descriptor.value);
       }
-    }
+    },
+    _collectionDefinition: definition,
+    _collectionScope: scope
   };
 
   return descriptor;

@@ -448,4 +448,28 @@ moduleForProperty('collection', function(test) {
     assert.equal(page.collectionPage.foo.objectAt(0).text, 'Lorem');
     assert.equal(page.collectionPage.foo.objectAt(1).text, 'Ipsum');
   });
+
+  test('returns an item when extended', async function(assert) {
+    let collectionPage = create({
+      foo: collection('span', {
+        text: text()
+      })
+    });
+
+    let page = create(collectionPage.extend({
+      // setDebugMe: true,
+      bar: collection("someClass", {
+        text: text()
+      })
+    }));
+
+    await this.adapter.createTemplate(this, page, `
+      <span>Lorem</span>
+      <span>Ipsum</span>
+    `);
+    
+    assert.equal(page.foo.objectAt(0).text, 'Lorem');
+    assert.equal(page.foo.objectAt(1).text, 'Ipsum');
+    assert.equal(page.bar.length, 0);
+  });
 });

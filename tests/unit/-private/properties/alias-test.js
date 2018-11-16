@@ -329,7 +329,44 @@ moduleForProperty('alias', function(test) {
     let page = create({
       scope: '.container',
       aliasPage: aliasPage
-    })
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container"><button>Look at me</button></div>');
+
+    assert.ok(page.aliasPage.aliasedIsButtonVisible);
+  });
+
+  test('can alias through extension', async function(assert) {
+    assert.expect(2);
+
+    const aliasPage = create({
+      isButtonVisible: isVisible('#originalId'),
+      aliasedIsButtonVisible: alias('isButtonVisible')
+    });
+
+
+    let page = create(aliasPage.extend({
+      isButtonVisible: isVisible("#someButton")
+    }));
+    await this.adapter.createTemplate(this, page, '<button id="someButton">Look at me</button>');
+
+    assert.ok(page.aliasedIsButtonVisible);
+    assert.notOk(aliasPage.aliasedIsButtonVisible);
+  });
+
+  test('can alias through composition + extension', async function(assert) {
+    assert.expect(1);
+
+    const containerPage = create({
+      scope: '.container'
+    });
+    const aliasPage = create({
+      isButtonVisible: isVisible('button'),
+      aliasedIsButtonVisible: alias('isButtonVisible')
+    });
+
+    let page = create(containerPage.extend({
+      aliasPage: aliasPage
+    }));
     await this.adapter.createTemplate(this, page, '<div class="container"><button>Look at me</button></div>');
 
     assert.ok(page.aliasPage.aliasedIsButtonVisible);
