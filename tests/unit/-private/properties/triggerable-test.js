@@ -185,4 +185,26 @@ moduleForProperty('triggerable', function(test) {
       return page.foo.bar.baz.qux();
     }, /page\.foo\.bar\.baz\.qux/, 'Element not found');
   });
+
+  test("calls Ember's triggerEvent helper with proper args when composed", async function(assert) {
+    assert.expect(1);
+
+    let expectedSelector = 'input';
+    let triggerPage = create({
+      foo: triggerable('focus', expectedSelector)
+    });
+
+    let page = create({
+      scope: '.container',
+      triggerPage: triggerPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container"><input /></div>');
+
+
+    this.adapter.$(expectedSelector).on('focus', () => {
+      assert.ok(1);
+    });
+
+    await this.adapter.await(page.triggerPage.foo());
+  });
 });

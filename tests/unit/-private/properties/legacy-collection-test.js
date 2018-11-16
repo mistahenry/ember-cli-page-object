@@ -581,4 +581,28 @@ moduleForProperty('legacy collection', function(test) {
     page.foo().filter();
     page.foo().filterBy();
   });
+  test('returns an item when composed', async function(assert) {
+    let collectionPage = create({
+      foo: collection({
+        itemScope: 'span',
+
+        item: {
+          text: text()
+        }
+      })
+    });
+    let page = create({
+      scope: '.container',
+      collectionPage: collectionPage
+    });
+    await this.adapter.createTemplate(this, page, `
+      <div class="container">
+        <span>Lorem</span>
+        <span>Ipsum</span>
+      </div>
+    `);
+
+    assert.equal(page.collectionPage.foo(0).text, 'Lorem');
+    assert.equal(page.collectionPage.foo(1).text, 'Ipsum');
+  });
 });

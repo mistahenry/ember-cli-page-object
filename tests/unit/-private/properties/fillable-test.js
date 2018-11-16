@@ -236,4 +236,26 @@ moduleForProperty('fillable', function(test) {
       return page.foo('lorem');
     }, /contenteditable/, 'Element should not be fillable because contenteditable="false"');
   });
+
+  test("calls fillIn method belonging to execution context when composed", async function(assert) {
+    assert.expect(1);
+
+    let expectedSelector = 'input';
+    let expectedText = 'dummy text';
+    let fillPage;
+
+    fillPage = create({
+      foo: fillable(expectedSelector)
+    });
+
+    let page = create({
+      scope: '.container',
+      fillPage: fillPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container"><input></div>');
+
+    await this.adapter.await(page.fillPage.foo(expectedText));
+
+    assert.equal(this.adapter.$(expectedSelector).val(), expectedText);
+  });
 });

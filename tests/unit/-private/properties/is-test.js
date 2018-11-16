@@ -150,4 +150,16 @@ moduleForProperty('is', function(test) {
 
     assert.equal(page.foo, true);
   });
+  test('returns is value when composed', async function(assert) {
+    let isPage = create({
+      foo: is(':checked', ':input')
+    });
+    let page = create({
+      scope: '.container',
+      isPage: isPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container"><input type="checkbox" checked></div>');
+
+    assert.equal(page.isPage.foo, true);
+  });
 });

@@ -103,4 +103,22 @@ moduleForProperty('count', function(test) {
 
     assert.equal(page.foo, 2);
   });
+  test('returns the number of elements that match the selector when composed', async function(assert) {
+    let countPage = create({
+      foo: count('span')
+    });
+
+    let page = create({
+      scope: '.container',
+      countPage: countPage
+    });
+    await this.adapter.createTemplate(this, page, `
+      <div class="container">
+        <span></span>
+        <span></span>
+      </div>
+    `);
+
+    assert.equal(page.countPage.foo, 2);
+  });
 });

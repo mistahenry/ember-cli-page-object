@@ -211,4 +211,16 @@ moduleForProperty('text', function(test) {
 
     assert.equal(page.foo, 'lorem ipsum');
   });
+  test('returns the inner text of the element when composed', async function(assert) {
+    let textPage = create({
+      foo: text('span')
+    });
+    let page = create({
+      scope: '.container',
+      textPage: textPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container">Hello <span>world!</span></div>');
+
+    assert.equal(page.textPage.foo, 'world!');
+  });
 });

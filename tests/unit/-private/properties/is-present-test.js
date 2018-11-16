@@ -143,4 +143,44 @@ moduleForProperty('isPresent', function(test) {
 
     assert.ok(page.foo);
   });
+
+  test('returns true when the element is visible when composed', async function(assert) {
+    let presentPage = create({
+      foo: isPresent('span')
+    });
+    let page = create({
+      scope: '.container',
+      presentPage: presentPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span>ipsum</span></div>');
+
+    assert.ok(page.presentPage.foo);
+  });
+
+  test('returns true when the element is hidden when composed', async function(assert) {
+    let presentPage = create({
+      foo: isPresent('span')
+    });
+    let page = create({
+      scope: '.container',
+      presentPage: presentPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span style="display:none">ipsum</span></div>');
+
+    assert.ok(page.presentPage.foo);
+  });
+
+  test('returns false when the element doesn\'t exist when composed', async function(assert) {
+    let presentPage = create({
+      foo: isPresent('span')
+    });
+    let page = create({
+      scope: '.container',
+      presentPage: presentPage
+    });
+
+    await this.adapter.createTemplate(this, page);
+
+    assert.ok(!page.presentPage.foo);
+  });
 });

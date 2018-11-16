@@ -166,4 +166,30 @@ moduleForProperty('notHasClass', function(test) {
 
     assert.ok(!page.foo);
   });
+
+  test('returns false when the element has the class when composed', async function(assert) {
+    let notHasClassPage = create({
+      foo: notHasClass('ipsum', '.lorem')
+    });
+    let page = create({
+      scope: '.container',
+      notHasClassPage: notHasClassPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span class="lorem ipsum">ipsum</span></div>');
+
+    assert.ok(!page.notHasClassPage.foo);
+  });
+
+  test('returns true when the element doesn\'t have the class when composed', async function(assert) {
+    let notHasClassPage = create({
+      foo: notHasClass('ipsum', '.lorem')
+    });
+    let page = create({
+      scope: '.container',
+      notHasClassPage: notHasClassPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span class="lorem">ipsum</span></div>');
+
+    assert.ok(page.notHasClassPage.foo);
+  });
 });

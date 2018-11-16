@@ -74,4 +74,20 @@ moduleForProperty('visitable', { needsVisit: true }, function(test) {
     await this.adapter.await(page.foo({ user_id: 'a/user', comment_id: 1 }));
     assert.equal(this.adapter.currentURL(), '/users/a%2Fuser/comments/1');
   });
+
+  test("calls Ember's visit helper when composed", async function(assert) {
+    assert.expect(1);
+
+    let expectedRoute = '/html-render';
+
+    let visitPage = create({
+      foo: visitable(expectedRoute)
+    });
+    let page = create({
+      scope: '.container',
+      visitPage: visitPage
+    });
+    await this.adapter.await(page.visitPage.foo());
+    assert.equal(this.adapter.currentURL(), expectedRoute);
+  });
 });

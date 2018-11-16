@@ -68,4 +68,23 @@ moduleForProperty('getter', function(test) {
       'Argument passed to getter must be a function'
     );
   });
+
+  test('returns the result of the passed-in function when composed', function(assert) {
+    assert.expect(2);
+
+    const getterPage = create({
+      foo: getter(function() {
+        return 'lorem';
+      }),
+      bar: getter(function() {
+        return 'ipsum';
+      })
+    });
+    let page = create({
+      scope: '.container',
+      getterPage: getterPage
+    });
+    assert.equal(page.getterPage.foo, 'lorem');
+    assert.equal(page.getterPage.bar, 'ipsum');
+  });
 });

@@ -149,4 +149,16 @@ moduleForProperty('property', function(test) {
 
     assert.ok(page.foo);
   });
+  test('returns property value when composed', async function(assert) {
+    let propertyPage = create({
+      foo: property('checked', ':input')
+    });
+    let page = create({
+      scope: '.container',
+      propertyPage: propertyPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container"><input type="checkbox" checked></div>');
+
+    assert.ok(page.propertyPage.foo);
+  });
 });

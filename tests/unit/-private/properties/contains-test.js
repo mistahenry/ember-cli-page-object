@@ -154,4 +154,18 @@ moduleForProperty('contains', function(test) {
 
     assert.ok(page.foo('ipsum'));
   });
+
+  test('returns true when the element contains the text when composed', async function(assert) {
+    let containsPage = create({
+      foo: contains('span')
+    });
+    let page = create({
+      scope: '.container',
+      containsPage: containsPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span>ipsum</span></div>');
+
+    assert.ok(!page.containsPage.foo('Not here'));
+    assert.ok(page.containsPage.foo('ipsum'));
+  });
 });

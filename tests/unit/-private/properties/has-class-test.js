@@ -166,4 +166,30 @@ moduleForProperty('hasClass', function(test) {
 
     assert.ok(page.foo);
   });
+
+  test('returns true when the element has the class when composed', async function(assert) {
+    let hasClassPage = create({
+      foo: hasClass('ipsum', 'span')
+    });
+    let page = create({
+      scope: '.container',
+      hasClassPage: hasClassPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container"><em class="lorem"></em><span class="ipsum"></span></div>');
+
+    assert.ok(page.hasClassPage.foo);
+  });
+
+  test('returns false when the element doesn\'t have the class when composed', async function(assert) {
+    let hasClassPage = create({
+      foo: hasClass('lorem', 'span')
+    });
+    let page = create({
+      scope: '.container',
+      hasClassPage: hasClassPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container"><em class="lorem"></em><span class="ipsum"></span></div>');
+
+    assert.ok(!page.hasClassPage.foo);
+  });
 });

@@ -156,4 +156,28 @@ moduleForProperty('isHidden', function(test) {
 
     assert.ok(page.foo);
   });
+  test('returns true when the element is hidden when composed', async function(assert) {
+    let hiddenPage = create({
+      foo: isHidden('span')
+    });
+    let page = create({
+      scope: '.container',
+      hiddenPage: hiddenPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span style="display:none">ipsum</span></div>');
+    
+    assert.ok(page.hiddenPage.foo);
+  });
+  test('returns false when the element is visible when composed', async function(assert) {
+    let hiddenPage = create({
+      foo: isHidden('span')
+    });
+    let page = create({
+      scope: '.container',
+      hiddenPage: hiddenPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span>ipsum</span></div>');
+    
+    assert.ok(!page.hiddenPage.foo);
+  });
 });

@@ -245,4 +245,26 @@ moduleForProperty('focusable', function(test, adapter) {
       return page.foo.bar.quuz();
     }, /page\.foo\.bar\.quuz/, 'Element is not focusable because it is contenteditable="false"');
   });
+
+  test('actually focuses the element when composed', async function(assert) {
+    assert.expect(2);
+
+    let expectedSelector = 'input';
+    let focusPage = create({
+      foo: focusable(expectedSelector)
+    });
+    let page = create({
+      scope: '.container',
+      focusPage: focusPage
+    });
+    await this.adapter.createTemplate(this, page, '<div class="container"><input /></div>');
+
+    let $element = this.adapter.$(expectedSelector);
+
+    $element.on('focus', () => {
+      assert.ok(1, 'focussed');
+      assert.equal(document.activeElement, $element[0]);
+    });
+    await this.adapter.await(page.focusPage.foo());
+  });
 });
