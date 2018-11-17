@@ -56,7 +56,20 @@ function buildChainObject(node, blueprintKey, blueprint, defaultBuilder) {
   return buildObject(node, blueprintKey, blueprint, defaultBuilder);
 }
 
-//recursively converts any page object child property (via composition) to stored definition object
+// recursively convert any page object child property to its definition
+
+// since page object properties are mostly getter based, page objects retain
+// a copy of their pojo definition representation to facilitate composition 
+// and extension (since accessing the page object's properties during 
+// extension / creation during the deep merging would fire off the getters).
+
+// collections are doubly complicated. First, they contain page object-like 
+// properties (ie properties created by the `create` function) that aren't truly
+// user created page objects. They also rely on Ceibo's `setup` function to delay 
+// the creation of the `collection` object to tree building time (rather than 
+// when defined), instead returning a Ceibo descriptor during defintion time.
+// They unavoidably rely on closure scoping to capture the descriptor which 
+
 export function convertPageObjectPropsToDefinitions(definition){
   Object.getOwnPropertyNames(definition).forEach(function(key){
     var property = definition[key];
