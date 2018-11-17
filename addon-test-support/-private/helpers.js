@@ -1,4 +1,5 @@
-export { assign } from '@ember/polyfills';
+import { assign } from '@ember/polyfills';
+export { assign };
 import { A } from '@ember/array';
 import { assert } from '@ember/debug';
 import { get } from '@ember/object';
@@ -321,6 +322,30 @@ export function getProperty(object, pathToProp) {
   return typeof value === 'function' ? value.bind(propOwner) : value;
 }
 
+// recursively convert any page object child property to its definition
+
+// since page object properties are mostly getter based, page objects retain
+// a copy of their pojo definition representation to facilitate composition 
+// and extension (since accessing the page object's properties during 
+// extension / creation during the deep merging would fire off the getters).
+export function convertPageObjectPropsToDefinitions(definition){
+  Object.getOwnPropertyNames(definition).forEach(function(key){
+    var property = definition[key];
+    //use the definition that created the page object in place of the page object
+    if(property && typeof(property) === 'object'){
+      if(isPageObject(property)){
+        let pageObjectDefinition = assign({}, Ceibo.meta(property).pageObjectDefinition);
+        definition[key] = pageObjectDefinition;
+      }
+      //ignore collections since they convert page objects before storing their definitions
+      else if(!isCollection(property)){
+        convertPageObjectPropsToDefinitions(property);
+      }      
+    }
+  });
+  return definition;
+}
+
 export function isPageObject(property){
     if(property && typeof(property) === 'object'){
       let meta = Ceibo.meta(property);
@@ -337,3 +362,13 @@ export function isCollection(property){
     return false;
   }
 }
+
+export function extendPageObject(pageObject, opts){
+  if(isPageObject(opts)){
+    opts = assign({}, Ceibo.meta(opts).pageObjectDefinition);
+  }
+  let overrides = convertPageObjectPropsToDefinitions(assign({}, opts));
+  return $.extend(true, {}, Ceibo.meta(pageObject).pageObjectDefinition, overrides);
+}
+
+

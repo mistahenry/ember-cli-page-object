@@ -1,10 +1,9 @@
 import Ceibo from 'ceibo';
 import { render, setContext, removeContext } from './-private/context';
-import { assign, isPageObject, isCollection } from './-private/helpers';
+import { assign, isCollection, extendPageObject, convertPageObjectPropsToDefinitions } from './-private/helpers';
 import { visitable } from './properties/visitable';
 import dsl from './-private/dsl';
 import { collection } from './properties/collection';
-import $ from '-jquery';
 
 //
 // When running RFC268 tests, we have to play some tricks to support chaining.
@@ -58,30 +57,6 @@ function buildChainObject(node, blueprintKey, blueprint, defaultBuilder) {
   return buildObject(node, blueprintKey, blueprint, defaultBuilder);
 }
 
-// recursively convert any page object child property to its definition
-
-// since page object properties are mostly getter based, page objects retain
-// a copy of their pojo definition representation to facilitate composition 
-// and extension (since accessing the page object's properties during 
-// extension / creation during the deep merging would fire off the getters).
-export function convertPageObjectPropsToDefinitions(definition){
-  Object.getOwnPropertyNames(definition).forEach(function(key){
-    var property = definition[key];
-    //use the definition that created the page object in place of the page object
-    if(property && typeof(property) === 'object'){
-      if(isPageObject(property)){
-        let pageObjectDefinition = assign({}, Ceibo.meta(property).pageObjectDefinition);
-        definition[key] = pageObjectDefinition;
-      }
-      //ignore collections since they convert page objects before storing their definitions
-      else if(!isCollection(property)){
-        convertPageObjectPropsToDefinitions(property);
-      }      
-    }
-  });
-  return definition;
-}
-
 // collections are doubly complicated. First, they contain page object-like 
 // properties (ie properties created by the `create` function) that aren't truly
 // user created page objects. They also rely on Ceibo's `setup` function to delay 
@@ -91,15 +66,15 @@ export function convertPageObjectPropsToDefinitions(definition){
 // is mutated with a `value` property. Simply storing a converted definition
 // and always reinvoking the `collection` function before `create` is called 
 // avoids unintended shared state 
-export function rescopeCollections(definition){
+function recreateCollections(definition){
   Object.getOwnPropertyNames(definition).forEach(function(key){
     var property = definition[key];
     //use the definition that created the page object in place of the page object
     if(property && typeof(property) === 'object'){
       if(isCollection(property)){
-        definition[key] = collection(property._collectionScope, rescopeCollections(property._collectionDefinition));
+        definition[key] = collection(property._collectionScope, recreateCollections(property._collectionDefinition));
       }else{
-        rescopeCollections(property);
+        recreateCollections(property);
       }
     }
   });
@@ -192,12 +167,13 @@ export function rescopeCollections(definition){
  * @return {PageObject}
  */
 export function create(definitionOrUrl, definitionOrOptions, optionsOrNothing) {
-  //only required to pass isPageObject = false when creating collections
+  //only required to pass `isPageObject` = false when creating collections
   let optionsOrIsPageObject = optionsOrNothing;
   let definition;
   let url;
   let options;
   let isUserCreatedPageObject;
+
   if (typeof (definitionOrUrl) === 'string') {
     url = definitionOrUrl;
     definition = definitionOrOptions || {};
@@ -211,29 +187,32 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrNothing) {
   }
 
   definition = assign({}, definition);
+
   if (url) {
     definition.visit = visitable(url);
   }
-  
+
   let { context } = definition;
   delete definition.context;
 
-  //we must replace all page objects with their definitions  
+  //we must replace all page objects with their definitions so the stored definition is reduced to a pojo  
   let definitionToStore = isUserCreatedPageObject ? convertPageObjectPropsToDefinitions(assign({}, definition)) : definition;
   definition = assign({}, definitionToStore);
-  rescopeCollections(definition);
+  recreateCollections(definition);
+
   // Build the chained tree
   let chainedBuilder = {
     object: buildChainObject
   };
   let chainedTree = Ceibo.create(definition, assign({ builder: chainedBuilder }, options));
+
   // Attach it to the root in the definition of the primary tree
   definition._chainedTree = {
     isDescriptor: true,
 
     get() {
       return chainedTree;
-    } 
+    }
   };
 
   // Build the primary tree
@@ -242,17 +221,13 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrNothing) {
   };
   
   let page = Ceibo.create(definition, assign({ builder }, options));
+
   if (page) {
     page.render = render;
     page.setContext = setContext;
     page.removeContext = removeContext;
     page.extend = function(opts){
-      if(isPageObject(opts)){
-        opts = assign({}, Ceibo.meta(opts).pageObjectDefinition);
-      }
-      let overrides = convertPageObjectPropsToDefinitions(assign({}, opts));
-      // let definitonToUseForExtension = $.extend(true, {}, definitionToStore, overrides);
-      return $.extend(true, {}, definitionToStore, overrides);
+      return extendPageObject(this, opts);
     }
     
     Ceibo.meta(page).pageObjectDefinition = definitionToStore;

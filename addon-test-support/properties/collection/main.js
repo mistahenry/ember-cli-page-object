@@ -1,10 +1,9 @@
 /* global Symbol */
 import { A } from '@ember/array';
-import { buildSelector, assign, isPageObject } from '../../-private/helpers';
+import { buildSelector, assign, isPageObject, convertPageObjectPropsToDefinitions } from '../../-private/helpers';
 import { create } from '../../create';
 import { count } from '../count';
 import Ceibo from 'ceibo';
-import { convertPageObjectPropsToDefinitions } from '../../create';
 
 export class Collection {
   constructor(scope, definition, parent, key) {
@@ -37,7 +36,7 @@ export class Collection {
       finalizedDefinition.scope = itemScope;
 
       let tree = create(finalizedDefinition, { parent }, false);
-      
+
       // Change the key of the root node
       Ceibo.meta(tree).key = `${key}[${index}]`;
 
