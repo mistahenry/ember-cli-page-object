@@ -4,6 +4,7 @@ import { buildSelector, assign } from '../../-private/helpers';
 import { create } from '../../create';
 import { count } from '../count';
 import Ceibo from 'ceibo';
+import { convertPageObjectPropsToDefinitions } from '../../create';
 
 export class Collection {
   constructor(scope, definition, parent, key) {
@@ -117,9 +118,9 @@ export function collection(scope, definition) {
         descriptor.value = proxyIt(descriptor.value);
       }
     },
-    _collectionDefinition: definition,
-    _collectionScope: scope
   };
+  descriptor._collectionDefinition = convertPageObjectPropsToDefinitions(assign({}, definition));
+  descriptor._collectionScope = scope;
 
   return descriptor;
 }

@@ -16,8 +16,8 @@ test('page objects store their definition', function(assert) {
   };
 
   let page = create(definition);
-  assert.ok(Ceibo.meta(page)._pageObjectDefinition);
-  assert.deepEqual(Ceibo.meta(page)._pageObjectDefinition, definition);
+  assert.ok(Ceibo.meta(page).pageObjectDefinition);
+  assert.deepEqual(Ceibo.meta(page).pageObjectDefinition, definition);
 });
 
 test('page objects have an extend function', function(assert){
@@ -84,9 +84,9 @@ test('page objects can be composed from other page objects', function(assert) {
   assert.ok(pageComposer);
   assert.ok(pageComposer.somePage);
 
-  assert.notOk(Ceibo.meta(pageComposer.somePage)._pageObjectDefinition, "child objects based on page objects do not store their definition");
+  assert.notOk(Ceibo.meta(pageComposer.somePage).pageObjectDefinition, "child objects based on page objects do not store their definition");
 
-  assert.deepEqual(Ceibo.meta(pageComposer)._pageObjectDefinition, {
+  assert.deepEqual(Ceibo.meta(pageComposer).pageObjectDefinition, {
     somePage: definition
   }, "page object definition of child object merges into parent page object's definition");
 });
@@ -108,7 +108,7 @@ test('page object composition supports many levels deep', function(assert){
   });
   assert.ok(pageComposer);
   assert.ok(pageComposer.bar.baz);
-  assert.deepEqual(Ceibo.meta(pageComposer)._pageObjectDefinition, {
+  assert.deepEqual(Ceibo.meta(pageComposer).pageObjectDefinition, {
     bar: {
       baz: definition
     }

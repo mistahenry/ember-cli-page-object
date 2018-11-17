@@ -2,10 +2,9 @@ import Ceibo from 'ceibo';
 import { render, setContext, removeContext } from './-private/context';
 import { assign } from './-private/helpers';
 import { visitable } from './properties/visitable';
-import { collection } from './properties/collection';
 import dsl from './-private/dsl';
+import { collection } from './properties/collection';
 import $ from '-jquery';
-//
 // When running RFC268 tests, we have to play some tricks to support chaining.
 // RFC268 helpers don't wait for things to settle by defaut, but return a
 // promise that will resolve when everything settles. So this means
@@ -58,21 +57,23 @@ function buildChainObject(node, blueprintKey, blueprint, defaultBuilder) {
 }
 
 //recursively converts any page object child property (via composition) to stored definition object
-function convertPageObjectPropsToDefinitions(definition){
+export function convertPageObjectPropsToDefinitions(definition){
   Object.getOwnPropertyNames(definition).forEach(function(key){
     var property = definition[key];
     //use the definition that created the page object in place of the page object
     if(property && typeof(property) === 'object'){
-      if(Ceibo.meta(property) && Ceibo.meta(property)._pageObjectDefinition){
-        let pageObjectDefinition = assign({}, Ceibo.meta(property)._pageObjectDefinition);
+
+      let meta = Ceibo.meta(property);
+      if(meta && meta.pageObjectDefinition){
+        let pageObjectDefinition = assign({}, Ceibo.meta(property).pageObjectDefinition);
 
         definition[key] = pageObjectDefinition;
       }else if(property._collectionDefinition && property._collectionScope){
-        definition[key] = collection(property._collectionScope, property._collectionDefinition)
+        let definitionToUse = assign({}, property._collectionDefinition);
+        definition[key] = collection(property._collectionScope, definitionToUse);
       }else{
         convertPageObjectPropsToDefinitions(property);
       }
-      
     }
   });
   return definition;
@@ -215,13 +216,12 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrIsPageObje
     page.setContext = setContext;
     page.removeContext = removeContext;
     page.extend = function(opts){
-      opts = assign({}, opts);
       let overrides = convertPageObjectPropsToDefinitions(assign({}, opts));
       // let definitonToUseForExtension = $.extend(true, {}, definitionToStore, overrides);
       return $.extend(true, {}, definitionToStore, overrides);
     }
     
-    Ceibo.meta(page)._pageObjectDefinition = definitionToStore;
+    Ceibo.meta(page).pageObjectDefinition = definitionToStore;
     
     page.setContext(context);
   }

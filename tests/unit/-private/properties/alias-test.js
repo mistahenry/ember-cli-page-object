@@ -363,10 +363,10 @@ moduleForProperty('alias', function(test) {
       isButtonVisible: isVisible('button'),
       aliasedIsButtonVisible: alias('isButtonVisible')
     });
-
     let page = create(containerPage.extend({
       aliasPage: aliasPage
     }));
+
     await this.adapter.createTemplate(this, page, '<div class="container"><button>Look at me</button></div>');
 
     assert.ok(page.aliasPage.aliasedIsButtonVisible);
