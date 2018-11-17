@@ -336,7 +336,7 @@ moduleForProperty('alias', function(test) {
   });
 
   test('can alias through extension', async function(assert) {
-    assert.expect(2);
+    assert.expect(1);
 
     const aliasPage = create({
       isButtonVisible: isVisible('#originalId'),
@@ -350,7 +350,6 @@ moduleForProperty('alias', function(test) {
     await this.adapter.createTemplate(this, page, '<button id="someButton">Look at me</button>');
 
     assert.ok(page.aliasedIsButtonVisible);
-    assert.notOk(aliasPage.aliasedIsButtonVisible);
   });
 
   test('can alias through composition + extension', async function(assert) {
