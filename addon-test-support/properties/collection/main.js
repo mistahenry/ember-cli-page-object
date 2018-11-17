@@ -27,6 +27,7 @@ export class Collection {
 
   objectAt(index) {
     let { key } = this;
+
     if (typeof this._items[index] === 'undefined') {
       let { scope, definition, parent } = this;
       let itemScope = buildSelector({}, scope, { at: index });
@@ -36,6 +37,7 @@ export class Collection {
       finalizedDefinition.scope = itemScope;
 
       let tree = create(finalizedDefinition, { parent }, false);
+      
       // Change the key of the root node
       Ceibo.meta(tree).key = `${key}[${index}]`;
 

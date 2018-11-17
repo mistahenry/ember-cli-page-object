@@ -5,6 +5,8 @@ import { visitable } from './properties/visitable';
 import dsl from './-private/dsl';
 import { collection } from './properties/collection';
 import $ from '-jquery';
+
+//
 // When running RFC268 tests, we have to play some tricks to support chaining.
 // RFC268 helpers don't wait for things to settle by defaut, but return a
 // promise that will resolve when everything settles. So this means
@@ -189,7 +191,9 @@ export function rescopeCollections(definition){
  * @param {Object} options - [private] Ceibo options. Do not use!
  * @return {PageObject}
  */
-export function create(definitionOrUrl, definitionOrOptions, optionsOrIsPageObject) {
+export function create(definitionOrUrl, definitionOrOptions, optionsOrNothing) {
+  //only required to pass isPageObject = false when creating collections
+  let optionsOrIsPageObject = optionsOrNothing;
   let definition;
   let url;
   let options;
