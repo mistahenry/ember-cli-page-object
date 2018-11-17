@@ -329,7 +329,7 @@ export function getProperty(object, pathToProp) {
 // and extension (since accessing the page object's properties during 
 // extension / creation during the deep merging would fire off the getters).
 export function convertPageObjectPropsToDefinitions(definition){
-  Object.getOwnPropertyNames(definition).forEach(function(key){
+  Object.keys(definition).forEach(function(key){
     var property = definition[key];
     //use the definition that created the page object in place of the page object
     if(property && typeof(property) === 'object'){

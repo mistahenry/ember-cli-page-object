@@ -67,7 +67,7 @@ function buildChainObject(node, blueprintKey, blueprint, defaultBuilder) {
 // and always reinvoking the `collection` function before `create` is called 
 // avoids unintended shared state 
 function recreateCollections(definition){
-  Object.getOwnPropertyNames(definition).forEach(function(key){
+  Object.keys(definition).forEach(function(key){
     var property = definition[key];
     //use the definition that created the page object in place of the page object
     if(property && typeof(property) === 'object'){
