@@ -167,23 +167,18 @@ function recreateCollections(definition){
  * @return {PageObject}
  */
 export function create(definitionOrUrl, definitionOrOptions, optionsOrNothing) {
-  //only required to pass `isPageObject` = false when creating collections
-  let optionsOrIsPageObject = optionsOrNothing;
   let definition;
   let url;
   let options;
-  let isUserCreatedPageObject;
 
   if (typeof (definitionOrUrl) === 'string') {
     url = definitionOrUrl;
     definition = definitionOrOptions || {};
-    options = optionsOrIsPageObject || {};
-    isUserCreatedPageObject = true;
+    options = optionsOrNothing || {};
   } else {
     url = false;
     definition = definitionOrUrl;
     options = definitionOrOptions || {};
-    isUserCreatedPageObject = (optionsOrIsPageObject !== false);
   }
 
   definition = assign({}, definition);
@@ -195,8 +190,8 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrNothing) {
   let { context } = definition;
   delete definition.context;
 
-  //we must replace all page objects with their definitions so the stored definition is reduced to a pojo  
-  let definitionToStore = isUserCreatedPageObject ? convertPageObjectPropsToDefinitions(assign({}, definition)) : definition;
+  //we must replace all page objects with their definitions so that the stored definition is reduced to a pojo  
+  let definitionToStore = convertPageObjectPropsToDefinitions(assign({}, definition));
   definition = assign({}, definitionToStore);
   recreateCollections(definition);
 

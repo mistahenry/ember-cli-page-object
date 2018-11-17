@@ -16,7 +16,7 @@ export class Collection {
         resetScope: this.definition.resetScope,
         testContainer: this.definition.testContainer
       })
-    }, { parent }, false);
+    }, { parent });
     this._items = [];
   }
 
@@ -35,7 +35,7 @@ export class Collection {
 
       finalizedDefinition.scope = itemScope;
 
-      let tree = create(finalizedDefinition, { parent }, false);
+      let tree = create(finalizedDefinition, { parent });
 
       // Change the key of the root node
       Ceibo.meta(tree).key = `${key}[${index}]`;
