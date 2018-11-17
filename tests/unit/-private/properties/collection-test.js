@@ -491,7 +491,6 @@ moduleForProperty('collection', function(test) {
     });
 
     let page = create(collectionPage.extend({
-      // setDebugMe: true,
       bar: collection(".someClass", {
         text: text()
       })
@@ -508,6 +507,71 @@ moduleForProperty('collection', function(test) {
     `);
     assert.equal(page.foo.objectAt(0).bar.objectAt(0).text, 'Lorem');
     assert.equal(page.foo.objectAt(1).bar.objectAt(1).text, 'bar');
+    assert.equal(page.bar.objectAt(2).text, 'bar');
+  });
 
+  test('returns an item when created via composition + extension', async function(assert) {
+    const containerPage = create({
+      scope: '.container'
+    });
+    let collectionPage = create({
+      foo: collection('span', {
+        text: text()
+      })
+    });
+
+    let page = create(containerPage.extend({
+      collectionPage: collectionPage
+    }));
+    await this.adapter.createTemplate(this, page, `
+      <div class="container">
+        <span>Lorem</span>
+        <span>Ipsum</span>
+      </div>
+    `);
+
+    assert.equal(page.collectionPage.foo.objectAt(0).text, 'Lorem');
+    assert.equal(page.collectionPage.foo.objectAt(1).text, 'Ipsum');
+  });
+
+  test('returns an item when created with page object as definition', async function(assert){
+    const textPage = create({
+      spanText: text("span")
+    });
+    let page = create({
+      scope: '.container',
+      collection: collection("li", textPage)
+    });
+
+    await this.adapter.createTemplate(this, page, `
+      <ul class="container">
+        <li>Text <span>Lorem</span></li>
+        <li>Text <span>Ipsum</span><>li<
+      <ul>
+    `);
+
+    assert.equal(page.collection.objectAt(0).spanText, 'Lorem');
+    assert.equal(page.collection.objectAt(1).spanText, 'Ipsum');
+  });
+
+  test('returns an item when collection definition contains page object', async function(assert){
+    const textPage = create({
+      spanText: text("span")
+    });
+    let page = create({
+      scope: '.container',
+      collection: collection("li", {
+        textPage: textPage
+      })
+    });
+    await this.adapter.createTemplate(this, page, `
+      <ul class="container">
+        <li>Text <span>Lorem</span></li>
+        <li>Text <span>Ipsum</span><>li<
+      <ul>
+    `);
+
+    assert.equal(page.collection.objectAt(0).textPage.spanText, 'Lorem');
+    assert.equal(page.collection.objectAt(1).textPage.spanText, 'Ipsum');
   });
 });

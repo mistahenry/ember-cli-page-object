@@ -605,4 +605,61 @@ moduleForProperty('legacy collection', function(test) {
     assert.equal(page.collectionPage.foo(0).text, 'Lorem');
     assert.equal(page.collectionPage.foo(1).text, 'Ipsum');
   });
+
+  test('returns an item when extended', async function(assert) {
+    let collectionPage = create({
+      foo: collection({
+        itemScope: 'span',
+
+        item: {
+          text: text()
+        }
+      })
+    });
+    let page = create(collectionPage.extend({
+      bar: collection({
+        itemScope: 'span',
+
+        item: {
+          text: text()
+        }
+      })
+    }));
+    await this.adapter.createTemplate(this, page, `
+      <span>Lorem</span>
+      <span>Ipsum</span>
+    `);
+
+    assert.equal(page.foo(0).text, 'Lorem');
+    assert.equal(page.foo(1).text, 'Ipsum');
+    assert.equal(page.bar(0).text, 'Lorem');
+    assert.equal(page.bar(1).text, 'Ipsum');
+  });
+
+  test('returns an item when extended + composed', async function(assert) {
+    let collectionPage = create({
+      foo: collection({
+        itemScope: 'span',
+
+        item: {
+          text: text()
+        }
+      })
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      collectionPage: collectionPage
+    }));
+    await this.adapter.createTemplate(this, page, `
+      <div class="container">
+        <span>Lorem</span>
+        <span>Ipsum</span>
+      </div>
+    `);
+
+    assert.equal(page.collectionPage.foo(0).text, 'Lorem');
+    assert.equal(page.collectionPage.foo(1).text, 'Ipsum');
+  });
 });

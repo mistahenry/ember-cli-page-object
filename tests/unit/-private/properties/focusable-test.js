@@ -267,4 +267,62 @@ moduleForProperty('focusable', function(test, adapter) {
     });
     await this.adapter.await(page.focusPage.foo());
   });
+
+  test('actually focuses the element when extended', async function(assert) {
+    assert.expect(4);
+
+    let expectedSelector = 'input';
+    let focusPage = create({
+      foo: focusable(expectedSelector)
+    });
+    let secondSelector = "#focusMe";
+    let page = create(focusPage.extend({
+      bar: focusable(secondSelector)
+    }));
+    await this.adapter.createTemplate(this, page, '<input />');
+
+    let $element = this.adapter.$(expectedSelector);
+
+    $element.on('focus', () => {
+      assert.ok(1, 'focussed');
+      assert.equal(document.activeElement, $element[0]);
+    });
+
+    await this.adapter.await(page.foo());
+
+    await this.adapter.createTemplate(this, page, '<input id="focusMe" />');
+    let $element2 = this.adapter.$(secondSelector);
+
+    $element2.on('focus', () => {
+      assert.ok(1, 'focussed');
+      assert.equal(document.activeElement, $element2[0]);
+    });
+    await this.adapter.await(page.bar());
+  });
+
+  test('actually focuses the element when extended + composed', async function(assert) {
+    assert.expect(2);
+
+    let expectedSelector = 'input';
+
+    let containerPage = create({
+      scope: '.container'
+    })
+    let focusPage = create({
+      foo: focusable(expectedSelector)
+    });
+
+    let page = create(containerPage.extend({
+      focusPage: focusPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container"><input /></div>');
+
+    let $element = this.adapter.$(expectedSelector);
+
+    $element.on('focus', () => {
+      assert.ok(1, 'focussed');
+      assert.equal(document.activeElement, $element[0]);
+    });
+    await this.adapter.await(page.focusPage.foo());
+  });
 });

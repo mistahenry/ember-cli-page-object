@@ -90,4 +90,40 @@ moduleForProperty('visitable', { needsVisit: true }, function(test) {
     await this.adapter.await(page.visitPage.foo());
     assert.equal(this.adapter.currentURL(), expectedRoute);
   });
+
+  test("calls Ember's visit helper when extended", async function(assert) {
+    assert.expect(2);
+
+    let expectedRoute = '/html-render';
+
+    let visitablePage = create({
+      foo: visitable(expectedRoute)
+    });
+    let expectedRoute2 = '/async-calculator';
+    let page = create(visitablePage.extend({
+      bar: visitable(expectedRoute2)
+    }));
+    await this.adapter.await(page.foo());
+    assert.equal(this.adapter.currentURL(), expectedRoute);
+
+    await this.adapter.await(page.bar());
+    assert.equal(this.adapter.currentURL(), expectedRoute2);
+  });
+  test("calls Ember's visit helper when extended + composed", async function(assert) {
+    assert.expect(1);
+
+    let expectedRoute = '/html-render';
+
+    let visitPage = create({
+      foo: visitable(expectedRoute)
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      visitPage: visitPage
+    }));
+    await this.adapter.await(page.visitPage.foo());
+    assert.equal(this.adapter.currentURL(), expectedRoute);
+  });
 });

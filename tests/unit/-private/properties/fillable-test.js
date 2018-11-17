@@ -258,4 +258,54 @@ moduleForProperty('fillable', function(test) {
 
     assert.equal(this.adapter.$(expectedSelector).val(), expectedText);
   });
+
+  test("calls fillIn method belonging to execution context when extended", async function(assert) {
+    assert.expect(2);
+
+    let expectedSelector = 'input';
+    let expectedText = 'dummy text';
+    let fillablePage = create({
+      foo: fillable(expectedSelector)
+    });
+
+    let page = create(fillablePage.extend({
+      bar: fillable(expectedSelector)
+    }));
+
+    await this.adapter.createTemplate(this, page, '<input>');
+
+    //test fillables from extended page object work
+    await this.adapter.await(page.foo(expectedText));
+
+    assert.equal(this.adapter.$(expectedSelector).val(), expectedText);
+    let secondText = "second Text"
+
+    //test fillable objects from extend opts work
+    await this.adapter.await(page.bar(secondText));
+
+    assert.equal(this.adapter.$(expectedSelector).val(), secondText);
+  });
+
+  test("calls fillIn method belonging to execution context when extended + composed", async function(assert) {
+    assert.expect(1);
+
+    let expectedSelector = 'input';
+    let expectedText = 'dummy text';
+
+    let containerPage = create({
+      scope: '.container'
+    })
+    let fillPage = create({
+      foo: fillable(expectedSelector)
+    });
+
+    let page = create(containerPage.extend({
+      fillPage: fillPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container"><input></div>');
+
+    await this.adapter.await(page.fillPage.foo(expectedText));
+
+    assert.equal(this.adapter.$(expectedSelector).val(), expectedText);
+  });
 });

@@ -192,4 +192,59 @@ moduleForProperty('notHasClass', function(test) {
 
     assert.ok(page.notHasClassPage.foo);
   });
+  test('returns false when the element has the class when extended', async function(assert) {
+    let notHasClassPage = create({
+      foo: notHasClass('ipsum', '.lorem')
+    });
+    let page = create(notHasClassPage.extend({
+      bar: notHasClass('ipsum', '.lorem')
+    }));
+    await this.adapter.createTemplate(this, page, '<span class="lorem ipsum"></span>');
+
+    assert.ok(!page.foo);
+    assert.ok(!page.bar);
+  });
+
+  test('returns true when the element doesn\'t have the class when extended', async function(assert) {
+    let notHasClassPage = create({
+      foo: notHasClass('ipsum', '.lorem')
+    });
+    let page = create(notHasClassPage.extend({
+      bar: notHasClass('ipsum', '.lorem')
+    }));
+    await this.adapter.createTemplate(this, page, '<span class="lorem"></span>');
+
+    assert.ok(page.foo);
+    assert.ok(page.bar);
+  });
+
+  test('returns false when the element has the class when extended + composed', async function(assert) {
+    let notHasClassPage = create({
+      foo: notHasClass('ipsum', '.lorem')
+    });
+    let containerPage = create({
+      scope: '.container'
+    }); 
+    let page = create(containerPage.extend({
+      notHasClassPage: notHasClassPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span class="lorem ipsum">ipsum</span></div>');
+
+    assert.ok(!page.notHasClassPage.foo);
+  });
+
+  test('returns true when the element doesn\'t have the class when extended + composed', async function(assert) {
+    let notHasClassPage = create({
+      foo: notHasClass('ipsum', '.lorem')
+    });
+    let containerPage = create({
+      scope: '.container'
+    }); 
+    let page = create(containerPage.extend({
+      notHasClassPage: notHasClassPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span class="lorem">ipsum</span></div>');
+
+    assert.ok(page.notHasClassPage.foo);
+  });
 });

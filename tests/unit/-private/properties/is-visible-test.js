@@ -182,4 +182,61 @@ moduleForProperty('isVisible', function(test) {
 
     assert.ok(!page.visiblePage.foo);
   });
+
+  test('returns true when the element is visible when extended', async function(assert) {
+    let isVisiblePage = create({
+      foo: isVisible('span')
+    });
+    let page = create(isVisiblePage.extend({
+      bar: isVisible('span')
+    }));
+    await this.adapter.createTemplate(this, page, 'Lorem <span>ipsum</span>');
+
+    assert.ok(page.foo);
+    assert.ok(page.bar);
+  });
+
+  test('returns false when the element is hidden when extended', async function(assert) {
+    let isVisiblePage = create({
+      foo: isVisible('span')
+    });
+    let page = create(isVisiblePage.extend({
+      bar: isVisible('span')
+    }));
+
+    await this.adapter.createTemplate(this, page, 'Lorem <span style="display:none">ipsum</span>');
+
+    assert.ok(!page.foo);
+    assert.ok(!page.bar);
+  });
+
+  test('returns true when the element is visible when extended + composed', async function(assert) {
+    let visiblePage = create({
+      foo: isVisible('span')
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      visiblePage: visiblePage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span>ipsum</span></div>');
+
+    assert.ok(page.visiblePage.foo);
+  });
+
+  test('returns false when the element is hidden when extended + composed', async function(assert) {
+    let visiblePage = create({
+      foo: isVisible('span')
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      visiblePage: visiblePage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span style="display:none">ipsum</span></div>');
+
+    assert.ok(!page.visiblePage.foo);
+  });
 });

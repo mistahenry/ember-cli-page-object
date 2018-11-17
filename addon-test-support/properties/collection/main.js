@@ -105,6 +105,10 @@ function proxyIt(instance) {
 }
 
 export function collection(scope, definition) {
+  let meta = Ceibo.meta(definition);
+  if(meta && meta.pageObjectDefinition){
+    definition = assign({}, meta.pageObjectDefinition)
+  }
   let descriptor = {
     isDescriptor: true,
 

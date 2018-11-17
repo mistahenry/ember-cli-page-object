@@ -121,4 +121,46 @@ moduleForProperty('count', function(test) {
 
     assert.equal(page.countPage.foo, 2);
   });
+
+  test('returns the number of elements that match the selector when extended', async function(assert) {
+    let countPage = create({
+      foo: count('span')
+    });
+
+    let page = create(countPage.extend({
+      bar: count(".someClass")
+    }));
+    await this.adapter.createTemplate(this, page, `
+      <span></span>
+      <span></span>
+      <span class="someClass"></span>
+      <span class="someClass"></span>
+    `);
+
+    //test that count properties from extended page object work
+    assert.equal(page.foo, 4);
+
+    //test that count properties in extend opts work
+    assert.equal(page.bar, 2);
+  });
+  test('returns the number of elements that match the selector when composed + extended', async function(assert) {
+    let containerPage = create({
+      scope: '.container'
+    });
+    let countPage = create({
+      foo: count('span')
+    });
+
+    let page = create(containerPage.extend({
+      countPage: countPage
+    }));
+    await this.adapter.createTemplate(this, page, `
+      <div class="container">
+        <span></span>
+        <span></span>
+      </div>
+    `);
+
+    assert.equal(page.countPage.foo, 2);
+  });
 });

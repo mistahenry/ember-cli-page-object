@@ -192,4 +192,61 @@ moduleForProperty('hasClass', function(test) {
 
     assert.ok(!page.hasClassPage.foo);
   });
+
+  test('returns true when the element has the class when extended', async function(assert) {
+    let hasClassPage = create({
+      foo: hasClass('ipsum', 'span')
+    });
+    let page = create(hasClassPage.extend({
+      bar: hasClass('lorem', 'em')
+    }));
+
+    await this.adapter.createTemplate(this, page, '<em class="lorem"></em><span class="ipsum"></span>');
+
+    assert.ok(page.foo);
+    assert.ok(page.bar);
+  });
+
+  test('returns false when the element doesn\'t have the class when extended', async function(assert) {
+    let hasClassPage = create({
+      foo: hasClass('lorem', 'span')
+    });
+    let page = create(hasClassPage.extend({
+      bar: hasClass('ipsum', 'em')
+    }));
+    await this.adapter.createTemplate(this, page, '<em class="lorem"></em><span class="ipsum"></span>');
+
+    assert.ok(!page.foo);
+    assert.ok(!page.bar);
+  });
+
+  test('returns true when the element has the class when extended + composed', async function(assert) {
+    let hasClassPage = create({
+      foo: hasClass('ipsum', 'span')
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      hasClassPage: hasClassPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container"><em class="lorem"></em><span class="ipsum"></span></div>');
+
+    assert.ok(page.hasClassPage.foo);
+  });
+
+  test('returns false when the element doesn\'t have the class when extended + composed', async function(assert) {
+    let hasClassPage = create({
+      foo: hasClass('lorem', 'span')
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      hasClassPage: hasClassPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container"><em class="lorem"></em><span class="ipsum"></span></div>');
+
+    assert.ok(!page.hasClassPage.foo);
+  });
 });

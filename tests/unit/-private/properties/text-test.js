@@ -223,4 +223,31 @@ moduleForProperty('text', function(test) {
 
     assert.equal(page.textPage.foo, 'world!');
   });
+
+  test('returns the inner text of the element when extended', async function(assert) {
+    let textPage = create({
+      foo: text('span')
+    });
+    let page = create(textPage.extend({
+      bar: text('span')
+    }));
+    await this.adapter.createTemplate(this, page, 'Hello <span>world!</span>');
+
+    assert.equal(page.foo, 'world!');
+    assert.equal(page.bar, 'world!');
+  });
+  test('returns the inner text of the element when extended + composed', async function(assert) {
+    let textPage = create({
+      foo: text('span')
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      textPage: textPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container">Hello <span>world!</span></div>');
+
+    assert.equal(page.textPage.foo, 'world!');
+  });
 });

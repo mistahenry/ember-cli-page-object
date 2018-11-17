@@ -183,4 +183,91 @@ moduleForProperty('isPresent', function(test) {
 
     assert.ok(!page.presentPage.foo);
   });
+
+  test('returns true when the element is visible when extended', async function(assert) {
+    let isPresentPage = create({
+      foo: isPresent('span')
+    });
+    let page = create(isPresentPage.extend({
+      bar: isPresent('span')
+    }));
+    await this.adapter.createTemplate(this, page, 'Lorem <span>ipsum</span>');
+
+    assert.ok(page.foo);
+    assert.ok(page.bar);
+  });
+
+  test('returns true when the element is hidden when extended', async function(assert) {
+    let isPresentPage = create({
+      foo: isPresent('span')
+    });
+    let page = create(isPresentPage.extend({
+      bar: isPresent('span')
+    }));
+
+    await this.adapter.createTemplate(this, page, 'Lorem <span style="display:none">ipsum</span>');
+
+    assert.ok(page.foo);
+    assert.ok(page.bar);
+  });
+
+  test('returns false when the element doesn\'t exist when extended', async function(assert) {
+    let isPresentPage = create({
+      foo: isPresent('span')
+    });
+    let page = create(isPresentPage.extend({
+      bar: isPresent('span')
+    }));
+
+    await this.adapter.createTemplate(this, page);
+
+    assert.ok(!page.foo);
+    assert.ok(!page.bar);
+  });
+
+  test('returns true when the element is visible when extended + composed', async function(assert) {
+    let presentPage = create({
+      foo: isPresent('span')
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      presentPage: presentPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span>ipsum</span></div>');
+
+    assert.ok(page.presentPage.foo);
+  });
+
+  test('returns true when the element is hidden when extended + composed', async function(assert) {
+    let presentPage = create({
+      foo: isPresent('span')
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      presentPage: presentPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span style="display:none">ipsum</span></div>');
+
+    assert.ok(page.presentPage.foo);
+  });
+
+  test('returns false when the element doesn\'t exist when extended + composed', async function(assert) {
+    let presentPage = create({
+      foo: isPresent('span')
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      presentPage: presentPage
+    }));
+
+    await this.adapter.createTemplate(this, page);
+
+    assert.ok(!page.presentPage.foo);
+  });
 });

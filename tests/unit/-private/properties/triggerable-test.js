@@ -200,6 +200,55 @@ moduleForProperty('triggerable', function(test) {
     });
     await this.adapter.createTemplate(this, page, '<div class="container"><input /></div>');
 
+    this.adapter.$(expectedSelector).on('focus', () => {
+      assert.ok(1);
+    });
+
+    await this.adapter.await(page.triggerPage.foo());
+  });
+
+  test("calls Ember's triggerEvent helper with proper args when extended", async function(assert) {
+    assert.expect(2);
+
+    let expectedSelector = 'input';
+    let triggerablePage = create({
+      foo: triggerable('focus', expectedSelector)
+    });
+    let secondSelector = '#someId'
+    let page = create(triggerablePage.extend({
+      bar: triggerable('focus', secondSelector)
+    }));
+    await this.adapter.createTemplate(this, page, '<input />');
+
+    this.adapter.$(expectedSelector).on('focus', () => {
+      assert.ok(1);
+    });
+
+    await this.adapter.await(page.foo());
+
+    await this.adapter.createTemplate(this, page, '<input id="someId" />');
+
+    this.adapter.$(secondSelector).on('focus', () => {
+      assert.ok(1);
+    });
+
+    await this.adapter.await(page.foo());
+  });
+
+  test("calls Ember's triggerEvent helper with proper args when extended + composed", async function(assert) {
+    assert.expect(1);
+
+    let expectedSelector = 'input';
+    let triggerPage = create({
+      foo: triggerable('focus', expectedSelector)
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      triggerPage: triggerPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container"><input /></div>');
 
     this.adapter.$(expectedSelector).on('focus', () => {
       assert.ok(1);

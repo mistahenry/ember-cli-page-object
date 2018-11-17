@@ -162,4 +162,30 @@ moduleForProperty('is', function(test) {
 
     assert.equal(page.isPage.foo, true);
   });
+  test('returns is value when extended', async function(assert) {
+    let isPage = create({
+      foo: is(':checked', ':input')
+    });
+    let page = create(isPage.extend({
+      bar: is(':checked', ":input")
+    }));
+    await this.adapter.createTemplate(this, page, '<input type="checkbox" checked>');
+
+    assert.equal(page.foo, true);
+    assert.equal(page.bar, true);
+  });
+  test('returns is value when extended + composed', async function(assert) {
+    let isPage = create({
+      foo: is(':checked', ':input')
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      isPage: isPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container"><input type="checkbox" checked></div>');
+
+    assert.equal(page.isPage.foo, true);
+  });
 });

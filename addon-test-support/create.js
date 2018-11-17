@@ -208,7 +208,7 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrIsPageObje
     options = definitionOrOptions || {};
     isPageObject = (optionsOrIsPageObject !== false);
   }
-  console.log("isPageObject", isPageObject);
+  
   definition = assign({}, definition);
   if (url) {
     definition.visit = visitable(url);

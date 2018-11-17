@@ -161,4 +161,31 @@ moduleForProperty('property', function(test) {
 
     assert.ok(page.propertyPage.foo);
   });
+  test('returns property value when extended', async function(assert) {
+    let propertyPage = create({
+      foo: property('checked', ':input')
+    });
+    let page = create(propertyPage.extend({
+      bar: property('checked', ':input')
+    }));
+
+    await this.adapter.createTemplate(this, page, '<input type="checkbox" checked>');
+
+    assert.ok(page.foo);
+    assert.ok(page.bar);
+  });
+  test('returns property value when extended + composed', async function(assert) {
+    let propertyPage = create({
+      foo: property('checked', ':input')
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      propertyPage: propertyPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container"><input type="checkbox" checked></div>');
+
+    assert.ok(page.propertyPage.foo);
+  });
 });

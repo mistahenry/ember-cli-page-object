@@ -87,4 +87,43 @@ moduleForProperty('getter', function(test) {
     assert.equal(page.getterPage.foo, 'lorem');
     assert.equal(page.getterPage.bar, 'ipsum');
   });
+
+  test('returns the result of the passed-in function when extended', function(assert) {
+    assert.expect(2);
+
+    const getterPage = create({
+      foo: getter(function() {
+        return 'lorem';
+      })
+    });
+
+    let page = create(getterPage.extend({
+      bar: getter(function() {
+        return 'ipsum';
+      })
+    }));
+    assert.equal(page.foo, 'lorem');
+    assert.equal(page.bar, 'ipsum');
+  });
+
+  test('returns the result of the passed-in function when extended + composed', function(assert) {
+    assert.expect(2);
+
+    const getterPage = create({
+      foo: getter(function() {
+        return 'lorem';
+      }),
+      bar: getter(function() {
+        return 'ipsum';
+      })
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      getterPage: getterPage
+    }));
+    assert.equal(page.getterPage.foo, 'lorem');
+    assert.equal(page.getterPage.bar, 'ipsum');
+  });
 });

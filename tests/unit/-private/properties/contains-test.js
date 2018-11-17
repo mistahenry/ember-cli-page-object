@@ -168,4 +168,41 @@ moduleForProperty('contains', function(test) {
     assert.ok(!page.containsPage.foo('Not here'));
     assert.ok(page.containsPage.foo('ipsum'));
   });
+
+  test('returns attribute value when extended', async function(assert) {
+    let containsPage = create({
+      foo: contains('span')
+    });
+
+    let page = create(containsPage.extend({
+      bar: contains('span')
+    }));
+
+    await this.adapter.createTemplate(this, page, 'Lorem <span>ipsum</span>');
+
+    //test extended page object's foo properties still work
+    assert.ok(!page.foo('Not here'));
+    assert.ok(page.foo('ipsum'));
+
+    //test that attribute properties created within extension overrides work properly
+    assert.ok(!page.bar('Not here'));
+    assert.ok(page.bar('ipsum'));
+  });
+
+  test('returns true when the element contains the text when composed + extended', async function(assert) {
+    let containerPage = create({
+      scope: '.container'
+    });
+    let containsPage = create({
+      foo: contains('span')
+    });
+    let page = create(containerPage.extend({
+      scope: '.container',
+      containsPage: containsPage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container">Lorem <span>ipsum</span></div>');
+
+    assert.ok(!page.containsPage.foo('Not here'));
+    assert.ok(page.containsPage.foo('ipsum'));
+  });
 });

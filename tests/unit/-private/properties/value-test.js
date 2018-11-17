@@ -178,4 +178,32 @@ moduleForProperty('value', function(test) {
 
     assert.equal(page.valuePage.foo, 'Lorem ipsum');
   });
+
+  test('returns the text of the input when extended', async function(assert) {
+    let valuePage = create({
+      foo: value('input')
+    });
+    let page = create(valuePage.extend({
+      bar: value('input')
+    }));
+    await this.adapter.createTemplate(this, page, '<input value="Lorem ipsum">');
+
+    assert.equal(page.foo, 'Lorem ipsum');
+    assert.equal(page.bar, 'Lorem ipsum');
+  });
+
+  test('returns the text of the input when extended + composed', async function(assert) {
+    let valuePage = create({
+      foo: value('input')
+    });
+    let containerPage = create({
+      scope: '.container'
+    });
+    let page = create(containerPage.extend({
+      valuePage: valuePage
+    }));
+    await this.adapter.createTemplate(this, page, '<div class="container"><input value="Lorem ipsum"></div>');
+
+    assert.equal(page.valuePage.foo, 'Lorem ipsum');
+  });
 });
