@@ -69,7 +69,9 @@ function buildChainObject(node, blueprintKey, blueprint, defaultBuilder) {
 // the creation of the `collection` object to tree building time (rather than 
 // when defined), instead returning a Ceibo descriptor during defintion time.
 // They unavoidably rely on closure scoping to capture the descriptor which 
-
+// is mutated with a `value` property. Simply storing a converted definition
+// and always reinvoking the `collection` function before `create` is called 
+// avoids improper shared state 
 export function convertPageObjectPropsToDefinitions(definition){
   Object.getOwnPropertyNames(definition).forEach(function(key){
     var property = definition[key];
