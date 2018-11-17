@@ -458,7 +458,7 @@ moduleForProperty('collection', function(test) {
 
     let page = create(collectionPage.extend({
       // setDebugMe: true,
-      bar: collection("someClass", {
+      bar: collection(".someClass", {
         text: text()
       })
     }));
@@ -471,5 +471,43 @@ moduleForProperty('collection', function(test) {
     assert.equal(page.foo.objectAt(0).text, 'Lorem');
     assert.equal(page.foo.objectAt(1).text, 'Ipsum');
     assert.equal(page.bar.length, 0);
+
+    await this.adapter.createTemplate(this, page, `
+      <div class="someClass">Lorem</div>
+      <div class="someClass">Ipsum</div>
+    `);
+    assert.equal(page.bar.objectAt(0).text, 'Lorem');
+    assert.equal(page.bar.objectAt(1).text, 'Ipsum');
+    assert.equal(page.foo.length, 0);
+  });
+
+  test('returns an item when page object with nested collection is extended', async function(assert) {
+    let collectionPage = create({
+      foo: collection('.container', {
+        bar: collection(".someClass", {
+          text: text()
+        })
+      })
+    });
+
+    let page = create(collectionPage.extend({
+      // setDebugMe: true,
+      bar: collection(".someClass", {
+        text: text()
+      })
+    }));
+
+    await this.adapter.createTemplate(this, page, `
+      <div class="container">
+        <span class="someClass">Lorem</span>
+      </div>
+      <div class="container">
+        <span class="someClass">foo</span>
+        <span class="someClass">bar</span>
+      </div>
+    `);
+    assert.equal(page.foo.objectAt(0).bar.objectAt(0).text, 'Lorem');
+    assert.equal(page.foo.objectAt(1).bar.objectAt(1).text, 'bar');
+
   });
 });

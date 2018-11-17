@@ -16,8 +16,8 @@ export class Collection {
       count: count(scope, {
         resetScope: this.definition.resetScope,
         testContainer: this.definition.testContainer
-      }, {}, false)
-    }, { parent });
+      })
+    }, { parent }, false);
     this._items = [];
   }
 

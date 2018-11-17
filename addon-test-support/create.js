@@ -62,16 +62,6 @@ function buildChainObject(node, blueprintKey, blueprint, defaultBuilder) {
 // a copy of their pojo definition representation to facilitate composition 
 // and extension (since accessing the page object's properties during 
 // extension / creation during the deep merging would fire off the getters).
-
-// collections are doubly complicated. First, they contain page object-like 
-// properties (ie properties created by the `create` function) that aren't truly
-// user created page objects. They also rely on Ceibo's `setup` function to delay 
-// the creation of the `collection` object to tree building time (rather than 
-// when defined), instead returning a Ceibo descriptor during defintion time.
-// They unavoidably rely on closure scoping to capture the descriptor which 
-// is mutated with a `value` property. Simply storing a converted definition
-// and always reinvoking the `collection` function before `create` is called 
-// avoids improper shared state 
 export function convertPageObjectPropsToDefinitions(definition){
   Object.getOwnPropertyNames(definition).forEach(function(key){
     var property = definition[key];
@@ -83,11 +73,34 @@ export function convertPageObjectPropsToDefinitions(definition){
         let pageObjectDefinition = assign({}, Ceibo.meta(property).pageObjectDefinition);
 
         definition[key] = pageObjectDefinition;
-      }else if(property._collectionDefinition && property._collectionScope){
-        let definitionToUse = assign({}, property._collectionDefinition);
-        definition[key] = collection(property._collectionScope, definitionToUse);
-      }else{
+      }
+      //ignore collections since they convert page objects before storing their definitions
+      else if(!property._collectionDefinition && !property._collectionScope){
         convertPageObjectPropsToDefinitions(property);
+      }
+    }
+  });
+  return definition;
+}
+
+// collections are doubly complicated. First, they contain page object-like 
+// properties (ie properties created by the `create` function) that aren't truly
+// user created page objects. They also rely on Ceibo's `setup` function to delay 
+// the creation of the `collection` object to tree building time (rather than 
+// when defined), instead returning a Ceibo descriptor during defintion time.
+// They unavoidably rely on closure scoping to capture the descriptor which 
+// is mutated with a `value` property. Simply storing a converted definition
+// and always reinvoking the `collection` function before `create` is called 
+// avoids improper shared state 
+export function rescopeCollections(definition){
+  Object.getOwnPropertyNames(definition).forEach(function(key){
+    var property = definition[key];
+    //use the definition that created the page object in place of the page object
+    if(property && typeof(property) === 'object'){
+      if(property._collectionDefinition && property._collectionScope){
+        definition[key] = collection(property._collectionScope, rescopeCollections(property._collectionDefinition));
+      }else{
+        rescopeCollections(property);
       }
     }
   });
@@ -195,6 +208,7 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrIsPageObje
     options = definitionOrOptions || {};
     isPageObject = (optionsOrIsPageObject !== false);
   }
+  console.log("isPageObject", isPageObject);
   definition = assign({}, definition);
   if (url) {
     definition.visit = visitable(url);
@@ -206,6 +220,7 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrIsPageObje
   //we must replace all page objects with their definitions  
   let definitionToStore = isPageObject ? convertPageObjectPropsToDefinitions(assign({}, definition)) : definition;
   definition = assign({}, definitionToStore);
+  rescopeCollections(definition);
   // Build the chained tree
   let chainedBuilder = {
     object: buildChainObject
