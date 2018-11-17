@@ -1,6 +1,6 @@
 import Ceibo from 'ceibo';
 import { render, setContext, removeContext } from './-private/context';
-import { assign } from './-private/helpers';
+import { assign, isPageObject, isCollection } from './-private/helpers';
 import { visitable } from './properties/visitable';
 import dsl from './-private/dsl';
 import { collection } from './properties/collection';
@@ -67,17 +67,14 @@ export function convertPageObjectPropsToDefinitions(definition){
     var property = definition[key];
     //use the definition that created the page object in place of the page object
     if(property && typeof(property) === 'object'){
-
-      let meta = Ceibo.meta(property);
-      if(meta && meta.pageObjectDefinition){
+      if(isPageObject(property)){
         let pageObjectDefinition = assign({}, Ceibo.meta(property).pageObjectDefinition);
-
         definition[key] = pageObjectDefinition;
       }
       //ignore collections since they convert page objects before storing their definitions
-      else if(!property._collectionDefinition && !property._collectionScope){
+      else if(!isCollection(property)){
         convertPageObjectPropsToDefinitions(property);
-      }
+      }      
     }
   });
   return definition;
@@ -91,13 +88,13 @@ export function convertPageObjectPropsToDefinitions(definition){
 // They unavoidably rely on closure scoping to capture the descriptor which 
 // is mutated with a `value` property. Simply storing a converted definition
 // and always reinvoking the `collection` function before `create` is called 
-// avoids improper shared state 
+// avoids unintended shared state 
 export function rescopeCollections(definition){
   Object.getOwnPropertyNames(definition).forEach(function(key){
     var property = definition[key];
     //use the definition that created the page object in place of the page object
     if(property && typeof(property) === 'object'){
-      if(property._collectionDefinition && property._collectionScope){
+      if(isCollection(property)){
         definition[key] = collection(property._collectionScope, rescopeCollections(property._collectionDefinition));
       }else{
         rescopeCollections(property);
@@ -196,19 +193,19 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrIsPageObje
   let definition;
   let url;
   let options;
-  let isPageObject;
+  let isUserCreatedPageObject;
   if (typeof (definitionOrUrl) === 'string') {
     url = definitionOrUrl;
     definition = definitionOrOptions || {};
     options = optionsOrIsPageObject || {};
-    isPageObject = true;
+    isUserCreatedPageObject = true;
   } else {
     url = false;
     definition = definitionOrUrl;
     options = definitionOrOptions || {};
-    isPageObject = (optionsOrIsPageObject !== false);
+    isUserCreatedPageObject = (optionsOrIsPageObject !== false);
   }
-  
+
   definition = assign({}, definition);
   if (url) {
     definition.visit = visitable(url);
@@ -218,7 +215,7 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrIsPageObje
   delete definition.context;
 
   //we must replace all page objects with their definitions  
-  let definitionToStore = isPageObject ? convertPageObjectPropsToDefinitions(assign({}, definition)) : definition;
+  let definitionToStore = isUserCreatedPageObject ? convertPageObjectPropsToDefinitions(assign({}, definition)) : definition;
   definition = assign({}, definitionToStore);
   rescopeCollections(definition);
   // Build the chained tree
@@ -246,6 +243,9 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrIsPageObje
     page.setContext = setContext;
     page.removeContext = removeContext;
     page.extend = function(opts){
+      if(isPageObject(opts)){
+        opts = assign({}, Ceibo.meta(opts).pageObjectDefinition);
+      }
       let overrides = convertPageObjectPropsToDefinitions(assign({}, opts));
       // let definitonToUseForExtension = $.extend(true, {}, definitionToStore, overrides);
       return $.extend(true, {}, definitionToStore, overrides);

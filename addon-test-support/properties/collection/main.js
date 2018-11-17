@@ -1,6 +1,6 @@
 /* global Symbol */
 import { A } from '@ember/array';
-import { buildSelector, assign } from '../../-private/helpers';
+import { buildSelector, assign, isPageObject } from '../../-private/helpers';
 import { create } from '../../create';
 import { count } from '../count';
 import Ceibo from 'ceibo';
@@ -105,9 +105,8 @@ function proxyIt(instance) {
 }
 
 export function collection(scope, definition) {
-  let meta = Ceibo.meta(definition);
-  if(meta && meta.pageObjectDefinition){
-    definition = assign({}, meta.pageObjectDefinition)
+  if(isPageObject(definition)){
+    definition = assign({}, Ceibo.meta(definition).pageObjectDefinition)
   }
   let descriptor = {
     isDescriptor: true,

@@ -320,3 +320,19 @@ export function getProperty(object, pathToProp) {
   return typeof value === 'function' ? value.bind(propOwner) : value;
 }
 
+export function isPageObject(property){
+    if(property && typeof(property) === 'object'){
+      let meta = Ceibo.meta(property);
+      return (meta && meta.pageObjectDefinition)
+    } else{
+      return false;
+    } 
+}
+
+export function isCollection(property){
+  if(property && typeof(property) === 'object'){
+    return (property._collectionDefinition && property._collectionScope);
+  }else{
+    return false;
+  }
+}
