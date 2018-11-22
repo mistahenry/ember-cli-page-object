@@ -49,13 +49,6 @@ function buildObject(node, blueprintKey, blueprint, defaultBuilder) {
   return defaultBuilder(node, blueprintKey, blueprint, defaultBuilder);
 }
 
-// This builder builds the chained tree
-function buildChainObject(node, blueprintKey, blueprint, defaultBuilder) {
-  blueprint = assign({}, blueprint);
-
-  return buildObject(node, blueprintKey, blueprint, defaultBuilder);
-}
-
 /**
  * Creates a new PageObject.
  *
@@ -167,7 +160,7 @@ export function create(definitionOrUrl, definitionOrOptions, optionsOrNothing) {
 
   // Build the chained tree
   let chainedBuilder = {
-    object: buildChainObject
+    object: buildObject
   };
   let chainedTree = Ceibo.create(definition, assign({ builder: chainedBuilder }, options));
 
