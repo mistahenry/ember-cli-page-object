@@ -1,9 +1,5 @@
----
-layout: page
-title: Native Events Mode
----
+# Native Events Mode
 
-{% raw %}
 By default, `ember-cli-page-object` uses global ember test helpers such as `click`, `fillIn`, `find`, etc.
 While it works great, this approach has one downside: global ember test helpers require `jQuery` to be bundled within your `Ember` global.
 
@@ -47,5 +43,3 @@ In order to fix this, you should replace the default event dispatcher with `embe
 ```sh
 npm i --save-dev ember-native-dom-event-dispatcher
 ```
-
-{% endraw %}

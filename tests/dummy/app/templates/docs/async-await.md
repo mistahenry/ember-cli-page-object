@@ -1,8 +1,4 @@
----
-layout: page
-title: Migrating to async/await
----
-{% raw %}
+# Migrating to async/await
 
 When migrating to use `"@ember/test-helpers"`, you should take care to update all your "actions" usages to leverage `async`/`await` syntax.
 
@@ -81,5 +77,3 @@ export default {
   }
 }
 ```
-
-{% endraw %}

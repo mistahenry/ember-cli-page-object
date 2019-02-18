@@ -1,9 +1,5 @@
----
-layout: page
-title: Extend
----
+# Extend 
 
-{% raw %}
 ### Methods
 
 You can create custom helpers by creating `Ceibo` descriptors. (`Ceibo` is a small library for parsing trees. You can check it out [here](http://github.com/san650/ceibo)).

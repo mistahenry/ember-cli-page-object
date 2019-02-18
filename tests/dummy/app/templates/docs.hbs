@@ -1,0 +1,20 @@
+{{docs-header}}
+
+{{#docs-viewer as |viewer|}}
+  {{#viewer.nav as |nav|}}
+    {{nav.section "Introduction"}}
+    {{nav.item "What is a Page Object?" "docs.index"}}
+    {{nav.item "Installation" "docs.installation"}}
+    {{nav.item "Quickstart" "docs.quickstart"}}
+    {{nav.item "Components" "docs.components"}}
+    {{nav.item "Extend page objects" "docs.extend"}}
+    {{nav.section "Migrating"}}
+    {{nav.item "@ember/test-helpers" "docs.async-await"}}
+    {{nav.item "Native Events Mode" "docs.native-events"}}
+    {{nav.item "To v1" "docs.migrating"}}
+  {{/viewer.nav}}
+
+  {{#viewer.main}}
+    {{outlet}}
+  {{/viewer.main}}
+{{/docs-viewer}}

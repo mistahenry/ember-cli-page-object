@@ -1,7 +1,4 @@
----
-layout: page
-title: Installation
----
+# Installation
 
 ```bash
 $ ember install ember-cli-page-object

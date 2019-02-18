@@ -52,6 +52,7 @@
     "coveralls": "^3.0.0",
     "documentation": "^5.3.3",
     "ember-cli": "~3.5.1",
+    "ember-cli-addon-docs": "^0.6.3",
     "ember-cli-addon-tests": "^0.11.0",
     "ember-cli-blueprint-test-helpers": "^0.18.2",
     "ember-cli-code-coverage": "1.0.0-beta.3",

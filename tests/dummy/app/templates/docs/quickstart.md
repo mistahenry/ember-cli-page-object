@@ -1,9 +1,4 @@
----
-layout: page
-title: Quickstart
----
-
-{% raw %}
+# Quickstart
 
 This is a short guide to get you started building powerful UI testing APIs using EmberCLI Page Object.
 
@@ -171,4 +166,3 @@ module('Search Page', // ...
   })
 ```
 
-{% endraw %}

@@ -1,7 +1,5 @@
----
-layout: page
-title: Components
----
+
+# Components
 
 Describe functional fragments of the DOM
 

@@ -1,8 +1,5 @@
----
-layout: page
-title: Migration Guide
----
-{% raw %}
+# Migration Guide
+
 In the update to ember-cli-page-object v1.x, we've defined more intuitive behavior and moved to a more polished and mature API.
 
 This sounds great, but it also comes with a cost: you need to migrate your test suite. This page includes a list of breaking changes and API enhancements to help you upgrade as quickly and painlessly as possible.
@@ -337,4 +334,3 @@ page.clickOn('Save');
 ```
 
 Before, the first action (`clickButton`) would not have worked, only the second action would have found the element. Now, both actions work and both actions do click the same button.
-{% endraw %}
